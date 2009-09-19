@@ -626,6 +626,7 @@ AC_ARG_ENABLE(clientids,      AS_HELP_STRING([--disable-clientids], [Build Xorg 
 AC_ARG_ENABLE(pciaccess, AS_HELP_STRING([--enable-pciaccess], [Build Xorg with pciaccess library (default: enabled)]), [PCI=$enableval], [PCI=yes])
 AC_ARG_ENABLE(linux_acpi, AS_HELP_STRING([--disable-linux-acpi], [Disable building ACPI support on Linux (if available).]), [enable_linux_acpi=$enableval], [enable_linux_acpi=yes])
 AC_ARG_ENABLE(linux_apm, AS_HELP_STRING([--disable-linux-apm], [Disable building APM support on Linux (if available).]), [enable_linux_apm=$enableval], [enable_linux_apm=yes])
+AC_ARG_ENABLE(wayland,      AS_HELP_STRING([--disable-wayland], [Build Wayland extension (default: auto)]), [WAYLAND=$enableval], [WAYLAND=auto])
 
 dnl DDXes.
 AC_ARG_ENABLE(xorg,    	      AS_HELP_STRING([--enable-xorg], [Build Xorg server (default: auto)]), [XORG=$enableval], [XORG=auto])
@@ -1019,6 +1020,18 @@ fi
 if test "x$MITSHM" = xauto; then
 	MITSHM="$ac_cv_sysv_ipc"
 fi
+
+WAYLAND_MODULES="wayland-client libdrm"
+if test "x$WAYLAND" = xauto; then
+        PKG_CHECK_MODULES(XWAYLAND, $WAYLAND_MODULES, [WAYLAND=yes], [WAYLAND=no])
+fi
+if test "x$WAYLAND" = xyes; then
+        PKG_CHECK_MODULES(XWAYLAND, $WAYLAND_MODULES)
+	AC_DEFINE(XORG_WAYLAND, 1, [Support wayland mode])
+	WAYLAND_SCANNER_RULES(['$(top_srcdir)/hw/xfree86/xwayland'])
+fi
+AM_CONDITIONAL(WAYLAND, [test "x$WAYLAND" = xyes])
+
 AM_CONDITIONAL(MITSHM, [test "x$MITSHM" = xyes])
 if test "x$MITSHM" = xyes; then
 	AC_DEFINE(MITSHM, 1, [Support MIT-SHM extension])
@@ -1248,6 +1261,7 @@ if test "x$DRI" = xyes || test "x$DRI2" = xyes || test "x$DRI3" = xyes || test "
 		PKG_CHECK_MODULES([LIBDRM], $LIBDRM)
 	fi
 fi
+AM_CONDITIONAL(DRM, test "x$DRM" = xyes)
 
 if test "x$DRI2" = xyes; then
 	save_CFLAGS=$CFLAGS
@@ -2485,6 +2499,7 @@ hw/xfree86/dixmods/Makefile
 hw/xfree86/doc/Makefile
 hw/xfree86/dri/Makefile
 hw/xfree86/dri2/Makefile
+hw/xfree86/xwayland/Makefile
 hw/xfree86/exa/Makefile
 hw/xfree86/exa/man/Makefile
 hw/xfree86/fbdevhw/Makefile

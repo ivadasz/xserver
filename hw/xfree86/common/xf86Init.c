@@ -550,6 +550,25 @@ InitOutput(ScreenInfo * pScreenInfo, int argc, char **argv)
             /* Non-seat0 X servers should not open console */
             if (!(flags & HW_SKIP_CONSOLE) && !ServerIsNotSeat0())
                 xorgHWOpenConsole = TRUE;
+
+	    if (xorgWayland) {
+                if (flags != HW_WAYLAND) {
+                    xf86DeleteDriver(i);
+                    continue;
+                }
+
+                want_hw_access = FALSE;
+                xorgHWOpenConsole = FALSE;
+	    }
+        }
+
+        for (i = 0; i < xf86NumDrivers; i++) {
+                if (xf86DriverList[i] == NULL) {
+                        for (j = i; j < xf86NumDrivers; j++) {
+                            xf86DriverList[j] = xf86DriverList[j + 1];
+                        }
+                        xf86NumDrivers--;
+                }
         }
 
         if (xorgHWOpenConsole)
@@ -962,6 +981,9 @@ InitInput(int argc, char **argv)
     xf86Info.vtRequestsPending = FALSE;
 
     mieqInit();
+
+    if (xorgWayland)
+	return;
 
     /* Initialize all configured input devices */
     for (pInfo = xf86ConfigLayout.inputs; pInfo && *pInfo; pInfo++) {
@@ -1460,6 +1482,16 @@ ddxProcessArgument(int argc, char **argv, int i)
     }
     if (!strcmp(argv[i], "-sharevts")) {
         xf86Info.ShareVTs = TRUE;
+        return 1;
+    }
+
+    if (!strcmp(argv[i], "-wayland")) {
+        xorgWayland = TRUE;
+        return 1;
+    }
+
+    if (!strcmp(argv[i], "-rootless")) {
+        xorgRootless = TRUE;
         return 1;
     }
 
