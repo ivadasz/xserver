@@ -204,6 +204,7 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
     xwl_seat->xwl_screen->serial = serial;
 
     xwl_seat->focus_window = NULL;
+    xwl_seat->cursor_frame_cb = NULL;
     CheckMotion(NULL, GetMaster(dev, MASTER_POINTER));
 }
 

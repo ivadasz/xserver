@@ -139,11 +139,12 @@ xwl_seat_set_cursor(struct xwl_seat *xwl_seat)
     wl_surface_damage(xwl_seat->cursor, 0, 0,
                       xwl_seat->x_cursor->bits->width,
                       xwl_seat->x_cursor->bits->height);
-
-    xwl_seat->cursor_frame_cb = wl_surface_frame(xwl_seat->cursor);
-    wl_callback_add_listener(xwl_seat->cursor_frame_cb, &frame_listener, xwl_seat);
-
+    if (xwl_seat->focus_window != NULL) {
+        xwl_seat->cursor_frame_cb = wl_surface_frame(xwl_seat->cursor);
+        wl_callback_add_listener(xwl_seat->cursor_frame_cb, &frame_listener, xwl_seat);
+    }
     wl_surface_commit(xwl_seat->cursor);
+
 }
 
 static void

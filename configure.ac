@@ -85,7 +85,7 @@ XORG_PROG_RAWCPP
 
 # Quoted so that make will expand $(CWARNFLAGS) in makefiles to allow
 # easier overrides at build time.
-XSERVER_CFLAGS='$(CWARNFLAGS)'
+XSERVER_CFLAGS='-I/build/vadaszi/local/include $(CWARNFLAGS)'
 
 dnl Explicitly add -fno-strict-aliasing since this option should disappear
 dnl from util-macros CWARNFLAGS
